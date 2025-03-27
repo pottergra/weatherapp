@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Document</title>
+</head>
+<body>
+    
+    <div class="card">
+        <div class="search">
+            <input type="text" placeholder="Enter city name" spellcheck="false">
+            <button><img src="assets/search.png"></button>
+        </div>
+        <div class="error">
+            <p>Invalid city name</p>
+        </div>
+
+
+        <div class="weather">
+            <img src="assets/rain.png" class="weather-icon">
+            <h1 class="temp">22°c</h1>
+            <h2 class="city">Toronto</h2>
+            <button id="unit-toggle">°F</button> <!-- Add a button to toggle the unit -->
+            <div class="details">
+                <div class="col">
+                    <img src="assets/humidity.png">
+                    <div>
+                        <p class="humidity">50%</p>
+                        <p>Humidity</p>
+                    </div>
+                </div>
+                <div class="col">
+                    <img src="assets/wind.png">
+                    <div>
+                        <p class="wind">15 km/h</p>
+                        <p>Wind Speed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const apiKey = "7f3740b1c0fad092966de33cb17add3c";
+const apiURL = "https://api.openweathermap.org/data/2.5/weather?units=metric&q=";
+const searchBox = document.querySelector(".search input");
+const searchBtn = document.querySelector(".search button");
+const weatherIcon = document.querySelector(".weather-icon");
+const unitToggle = document.getElementById("unit-toggle");
+
+let unit = "metric"; // Default unit is metric (Celsius)
+let unitLabel = "°C"; // Default label
+
+async function checkWeather(city) {
+    const response = await fetch(apiURL + city + `&appid=${apiKey}&units=${unit}`);
+
+    if(response.status == 404) {
+        document.querySelector(".error").style.display = "block";
+        document.querySelector(".weather").style.display = "none";
+    } else {
+        var data = await response.json();
+        
+        document.querySelector(".city").innerHTML = data.name;
+        let temp = Math.round(data.main.temp);
+        
+        if (unit === "imperial") {
+            // Convert Celsius to Fahrenheit
+            temp = Math.round((temp * 9/5) + 32);
+            unitLabel = "°F";
+        } else {
+            unitLabel = "°C"; // Celsius
+        }
+
+        document.querySelector(".temp").innerHTML = temp + unitLabel;
+        document.querySelector(".humidity").innerHTML = data.main.humidity + "%";
+        document.querySelector(".wind").innerHTML = data.wind.speed + " km/h";
+        
+        // Weather Icon
+        if(data.weather[0].main === "Clouds") {
+            weatherIcon.src = "assets/clouds.png";
+        } else if(data.weather[0].main === "Clear") {
+            weatherIcon.src = "assets/clear.png";
+        } else if(data.weather[0].main === "Drizzle") {
+            weatherIcon.src = "assets/drizzle.png";
+        } else if(data.weather[0].main === "Rain") {
+            weatherIcon.src = "assets/rain.png";
+        } else if(data.weather[0].main === "Mist") {
+            weatherIcon.src = "assets/mist.png";
+        } else if(data.weather[0].main === "Thunderstorm") {
+            weatherIcon.src = "assets/thunderstorm.png";
+        } else if(data.weather[0].main === "Snow") {
+            weatherIcon.src = "assets/snow.png";
+        }
+        
+        document.querySelector(".weather").style.display = "block";
+        document.querySelector(".error").style.display = "none";
+    }
+}
+
+searchBox.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+        checkWeather(searchBox.value);
+    }
+});
+
+searchBtn.addEventListener("click", () => {
+    checkWeather(searchBox.value);
+});
+
+// Toggle unit between Celsius and Fahrenheit
+unitToggle.addEventListener("click", () => {
+    if (unit === "metric") {
+        unit = "imperial";  // Change to Fahrenheit
+        unitToggle.innerHTML = "°C";  // Update button label
+    } else {
+        unit = "metric";  // Change to Celsius
+        unitToggle.innerHTML = "°F";  // Update button label
+    }
+    checkWeather(searchBox.value);  // Update weather with new unit
+});
+</script>
+</body>
+</html>
